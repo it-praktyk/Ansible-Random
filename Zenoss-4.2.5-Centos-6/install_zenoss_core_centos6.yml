@@ -1,0 +1,104 @@
+---
+- hosts: main
+  gather_facts: no
+  become: yes
+  become_user: root
+
+  pre_tasks:
+
+  - name: ensure that package libselinux-python is present
+    yum:
+      name=libselinux-python
+      state=present
+      update_cache=yes
+
+  tasks:
+
+  - name: install rpm with data about the Fedora EPEL repository
+    yum:
+      name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+      state=present
+      update_cache=no
+
+  - name: add Fedora EPEL gpg key to rpm db
+    rpm_key:
+      key=/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6
+      state=present
+
+  - name: install rpm with data about the MySQL Community Edition Repository
+    yum:
+      name="https://dev.mysql.com/get/mysql57-community-release-el6-9.noarch.rpm"
+      state=present
+      update_cache=no
+
+  - name: add the MySQL Community Edition Repository gpg key to rpm db
+    rpm_key:
+      key=/etc/pki/rpm-gpg/RPM-GPG-KEY-mysql
+      state=present
+
+  - name: install additional packages
+    yum:
+      name="{{ item }}"
+      state=present
+      disablerepo="mysql57-community"
+      enablerepo="mysql55-community"
+      update_cache=yes
+
+    with_items:
+      - jre
+      - liberation-fonts-common
+      - liberation-mono-fonts
+      - liberation-sans-fonts
+      - liberation-serif-fonts
+      - libxslt
+      - libgcj
+      - libgomp
+      - memcached
+      - nagios-plugins
+      - nagios-plugins-dig
+      - nagios-plugins-dns
+      - nagios-plugins-http
+      - nagios-plugins-ircd
+      - nagios-plugins-ldap
+      - nagios-plugins-ntp
+      - nagios-plugins-perl
+      - nagios-plugins-ping
+      - nagios-plugins-rpc
+      - nagios-plugins-tcp
+      - net-snmp
+      - net-snmp-utils
+      - patch
+      - rabbitmq-server
+      - redis
+      - mysql-libs
+      - mysql-community-libs-compat
+      # below are dependencies for rrdtool>=1.4.7
+      - gettext
+      - ruby
+      - perl-Time-HiRes
+
+  - name: download rpms with rrdtool* >=1.4.7
+    get_url:
+      url="{{ item }}"
+      dest="~/"
+    with_items:
+      - "http://packages.express.org/rrdtool/rrdtool-perl-1.4.7-1.el6.wrl.x86_64.rpm"
+      - "http://packages.express.org/rrdtool/rrdtool-1.4.7-1.el6.wrl.x86_64.rpm"
+
+  #This task is not fully compliant because rpm's will be install every time when plabook will be run:-/
+  - name: install rpm with rrdtool >=1.4.7
+    command: /bin/rpm -ivh ~/rrdtool-perl-1.4.7-1.el6.wrl.x86_64.rpm ~/rrdtool-1.4.7-1.el6.wrl.x86_64.rpm --force
+
+    #http://wiki.zenoss.org/Install_Zenoss -> Manual installation
+  - name: download Zenoss Core 4.2.5 rpm package
+    get_url:
+      url="http://sourceforge.net/projects/zenoss/files/zenoss-4.2/zenoss-4.2.5/zenoss_core-4.2.5-2108.el6.x86_64.rpm"
+      dest="~/"
+      validate_certs="no"
+
+  - name: install Zenoss Core 4.2.5 package
+    yum:
+      name="/root/zenoss_core-4.2.5-2108.el6.x86_64.rpm"
+      state=present
+
+...

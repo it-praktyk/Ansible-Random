@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  #To use triggers you need install vagrant-triggers plugin installed
+  config.trigger.before :up,:vm => "centosAm" do
+    info "Copying insecure vagrant ssh key to current directory"
+    run "cp /opt/vagrant/embedded/gems/gems/vagrant-1.9.1/keys/vagrant ./vagrant-insecure-key"
+  end
+
+  config.ssh.username = "vagrant"
+  #login using password is disabled on centos/6 box
+  #config.ssh.password = "vagrant"
+  config.ssh.insert_key = false
+#  config.ssh.private_key_path = Array['./vagrant-insecure-key']
+
+  config.vm.box = "centos/6"
+  config.vm.hostname = "zenoss-1"
+  config.vm.network "private_network", ip: "192.168.86.150"
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "./install_zenoss_core_centos6.yml"
+    ansible.limit = "main"
+    ansible.config_file = "./ansible.cfg"
+    ansible.inventory_path = "./hosts.yml"
+  end
+
+end

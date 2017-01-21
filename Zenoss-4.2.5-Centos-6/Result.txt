@@ -1,0 +1,146 @@
+➜  Zenoss vagrant up
+Bringing machine 'default' up with 'vmware_workstation' provider...
+==> default: Running triggers before up...
+==> default: Cloning VMware VM: 'centos/6'. This can take some time...
+==> default: Checking if box 'centos/6' is up to date...
+==> default: Verifying vmnet devices are healthy...
+==> default: Preparing network adapters...
+==> default: Starting the VMware VM...
+==> default: Waiting for machine to boot. This may take a few minutes...
+    default: SSH address: 192.168.86.241:22
+    default: SSH username: vagrant
+    default: SSH auth method: private key
+    default: Warning: Connection refused. Retrying...
+==> default: Machine booted and ready!
+==> default: Forwarding ports...
+    default: -- 22 => 2222
+==> default: Setting hostname...
+==> default: Configuring network adapters within the VM...
+==> default: Rsyncing folder: /home/wojtek/Vagrant/Zenoss/ => /vagrant
+==> default: Running provisioner: ansible...
+    default: Running ansible-playbook...
+ _____________
+< PLAY [main] >
+ -------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+ _________________________________________________________
+< TASK [ensure that package libselinux-python is present] >
+ ---------------------------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+changed: [192.168.86.150]
+ ___________________________________________________
+/ TASK [install rpm with data about the Fedora EPEL \
+\ repository]                                       /
+ ---------------------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+changed: [192.168.86.150]
+ __________________________________________
+< TASK [add Fedora EPEL gpg key to rpm db] >
+ ------------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+changed: [192.168.86.150]
+ _______________________________________________________
+/ TASK [install rpm with data about the MySQL Community \
+\ Edition Repository]                                   /
+ -------------------------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+changed: [192.168.86.150]
+ _____________________________________________________________
+/ TASK [add the MySQL Community Edition Repository gpg key to \
+\ rpm db]                                                     /
+ -------------------------------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+changed: [192.168.86.150]
+ ____________________________________
+< TASK [install additional packages] >
+ ------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+changed: [192.168.86.150] => (item=[u'jre', u'liberation-fonts-common', u'liberation-mono-fonts', u'liberation-sans-fonts', u'liberation-serif-fonts', u'libxslt', u'libgcj', u'libgomp', u'memcached', u'nagios-plugins', u'nagios-plugins-dig', u'nagios-plugins-dns', u'nagios-plugins-http', u'nagios-plugins-ircd', u'nagios-plugins-ldap', u'nagios-plugins-ntp', u'nagios-plugins-perl', u'nagios-plugins-ping', u'nagios-plugins-rpc', u'nagios-plugins-tcp', u'net-snmp', u'net-snmp-utils', u'patch', u'rabbitmq-server', u'redis', u'mysql-libs', u'mysql-community-libs-compat', u'gettext', u'ruby', u'perl-Time-HiRes'])
+ ____________________________________________
+< TASK [download rpms with rrdtool* >=1.4.7] >
+ --------------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+changed: [192.168.86.150] => (item=http://packages.express.org/rrdtool/rrdtool-perl-1.4.7-1.el6.wrl.x86_64.rpm)
+changed: [192.168.86.150] => (item=http://packages.express.org/rrdtool/rrdtool-1.4.7-1.el6.wrl.x86_64.rpm)
+ _________________________________________
+< TASK [install rpm with rrdtool >=1.4.7] >
+ -----------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+changed: [192.168.86.150]
+ [WARNING]: Consider using yum, dnf or zypper module rather than running rpm
+
+ _______________________________________________
+< TASK [download Zenoss Core 4.2.5 rpm package] >
+ -----------------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+changed: [192.168.86.150]
+ __________________________________________
+< TASK [install Zenoss Core 4.2.5 package] >
+ ------------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+changed: [192.168.86.150]
+ ____________
+< PLAY RECAP >
+ ------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+192.168.86.150             : ok=10   changed=10   unreachable=0    failed=0
