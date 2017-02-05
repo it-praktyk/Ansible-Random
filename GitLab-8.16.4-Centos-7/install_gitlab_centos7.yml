@@ -1,0 +1,58 @@
+---
+- hosts: main
+  gather_facts: no
+  become: yes
+  become_user: root
+
+  pre_tasks:
+
+  - name: ensure that package libselinux-python is present
+    yum:
+      name=libselinux-python
+      state=present
+      update_cache=yes
+
+  tasks:
+
+  #- name: enable and start firewalld
+  #  service:
+  #    name="firewalld"
+  #    state="started"
+  #    enabled="yes"
+
+  #- name: enable traffic to http
+  #  firewalld:
+  #    service="http"
+  #    state="enabled"
+  #    permanent="yes"
+  #    immediate="yes"
+  #  notify:
+  #    - restart_firewalld
+
+  - name: download and install the file with data about the GitLab CE repository
+    get_url:
+      url="https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/config_file.repo?os=centos&dist=7&source=script"
+      dest="/etc/yum.repos.d/gitlab_gitlab-ce.repo"
+      #validate_certs="no"
+
+
+  - name: install GitLab CE from rpm
+    yum:
+      name="/vagrant/sources/gitlab-ce-8.16.4-ce.0.el7.x86_64.rpm"
+      state="present"
+      update_cache="yes"
+    notify:
+      - reconfigure_gitlab
+
+  handlers:
+
+  - name: restart_firewalld
+    service:
+      name="firewalld"
+      state="restarted"
+
+  - name: reconfigure_gitlab
+    command: gitlab-ctl reconfigure
+
+
+...

@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  #To use triggers you need install vagrant-triggers plugin installed
+  config.trigger.before :up,:vm => "vm1" do
+    info "Copying insecure vagrant ssh key to the current directory"
+    run "rm -rf ./vagrant-insecure-key 2>/dev/null"
+    run "cp /opt/vagrant/embedded/gems/gems/vagrant-1.9.1/keys/vagrant ./vagrant-insecure-key"
+    run "chmod 400 ./vagrant-insecure-key"
+  end
+
+  config.ssh.username = "vagrant"
+  #login using password is disabled on centos/7 box
+  #config.ssh.password = "vagrant"
+  config.ssh.insert_key = false
+#  config.ssh.private_key_path = Array['./vagrant-insecure-key']
+
+# create mgmt node
+config.vm.define :vm1 do |vm1_config|
+  vm1_config.vm.box = "centos/7"
+  vm1_config.vm.hostname = "gitlab-1"
+  vm1_config.vm.provider "vmware_workstation" do |vb|
+    vb.memory = "4096"
+  end
+
+
+  vm1_config.vm.provision "shell",
+  run: "always",
+  inline: "sudo nmcli con mod 'System eth0' ipv4.addresses '192.168.86.153/24'"
+
+  vm1_config.vm.provision "shell",
+  run: "always",
+  inline: "sudo nmcli con up 'System eth0' > /dev/null"
+
+end
+
+#  config.vm.provision "ansible" do |ansible|
+#    ansible.playbook = "./install_zenoss_core_centos6.yml"
+#    ansible.limit = "main"
+#    ansible.config_file = "./ansible.cfg"
+#    ansible.inventory_path = "./hosts.yml"
+#  end
+
+end
