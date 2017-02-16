@@ -1,0 +1,145 @@
+---
+- hosts: main
+  #gather_facts: no
+  become: yes
+  become_user: root
+
+  vars:
+    tomcat_directory: "/opt/tomcat"
+    # python -c 'import crypt; print crypt.crypt("tomcat", "Pa$$w0rd")'
+    tomcat_password: PaMhyMCWEN2Q.
+    tomcat_package_name: "apache-tomcat-9.0.0.M17.tar.gz"
+    tomcat_http_source: "http://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.0.M17/bin/apache-tomcat-9.0.0.M17.tar.gz"
+
+  pre_tasks:
+
+  - name: ensure that package libselinux-python is present
+    yum:
+      name: libselinux-python
+      state: present
+      update_cache: yes
+
+  tasks:
+
+  - name: install rpm with data about the Fedora EPEL repository
+    yum:
+      name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      state: present
+      update_cache: no
+
+  - name: add Fedora EPEL gpg key to rpm db
+    rpm_key:
+      key: /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+      state: present
+
+  - name: install additional packages
+    yum:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+    with_items:
+      - java-1.8.0-openjdk
+
+  - name: Create group tomcat
+    group:
+      name: tomcat
+      state: present
+
+  - name: Create user tomcat
+    user:
+      name: tomcat
+      password: "{{ tomcat_password }}"
+      state: present
+      group: "tomcat"
+      createhome: no
+      home: "{{ tomcat_directory }}"
+      shell: /sbin/nologin
+
+  - name: Create installation directory
+    file:
+      path: "{{ tomcat_directory }}"
+      state: directory
+      owner: tomcat
+      group: tomcat
+      mode: 0755
+
+  - name: Download Tomcat package
+    get_url:
+      url: " {{ tomcat_http_source }} "
+      dest: /home/vagrant/
+      owner: vagrant
+      group: users
+
+  - name: Unpack Tomcat package
+    unarchive:
+      copy: no
+      src: "/home/vagrant/{{ tomcat_package_name }}"
+      dest: "{{ tomcat_directory }}"
+      extra_opts: ['--strip-components=1']
+
+  - name: Set proper group ownership for Tomcat folder
+    file:
+      path: "{{ tomcat_directory }}"
+      owner: root
+      group: tomcat
+      recurse: yes
+
+  - name: Set proper folders owner
+    file:
+      path: "{{ item }}"
+      owner: tomcat
+      recurse: yes
+    with_items:
+      - "{{ tomcat_directory }}/logs"
+      - "{{ tomcat_directory }}/webapps"
+      - "{{ tomcat_directory }}/work"
+      - "{{ tomcat_directory }}/temp"
+
+  - name: Set proper permissions for configuration folder content
+    acl:
+      path: "{{ tomcat_directory }}/conf"
+      etype: group
+      permissions: r
+      recursive: yes
+      state: present
+
+  - name: Set proper permissions for configuration folder
+    acl:
+      path: "{{ tomcat_directory }}/conf"
+      etype: group
+      permissions: rx
+      recursive: no
+      state: present
+
+  - name: Create SystemD Unit for Tomcat
+    copy:
+      src: templates/tomcat.service
+      dest: /etc/systemd/system/tomcat.service
+
+  - name: enable and start services
+    service:
+      name: "{{ item }}"
+      state: "started"
+      enabled: "yes"
+    with_items:
+      - firewalld
+      - tomcat
+
+  - name: enable traffic to http
+    firewalld:
+      port: 8080
+      state: "enabled"
+      permanent: "yes"
+      immediate: "yes"
+    notify:
+      - restart_firewalld
+
+
+  handlers:
+
+  - name: restart_firewalld
+    service:
+      name="firewalld"
+      state="restarted"
+
+...
