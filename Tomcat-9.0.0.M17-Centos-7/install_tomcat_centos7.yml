@@ -39,6 +39,7 @@
       update_cache: yes
     with_items:
       - java-1.8.0-openjdk
+      - net-tools #provide the netstat command
 
   - name: Create group tomcat
     group:
@@ -127,7 +128,7 @@
 
   - name: enable traffic to http
     firewalld:
-      port: 8080
+      port: "8080/tcp"
       state: "enabled"
       permanent: "yes"
       immediate: "yes"
