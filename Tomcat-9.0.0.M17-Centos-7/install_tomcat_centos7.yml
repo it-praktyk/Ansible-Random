@@ -11,6 +11,10 @@
     tomcat_package_name: "apache-tomcat-9.0.0.M17.tar.gz"
     tomcat_http_source: "http://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.0.M17/bin/apache-tomcat-9.0.0.M17.tar.gz"
 
+# Sources of knowledge
+# https://www.digitalocean.com/community/tutorials/how-to-install-apache-tomcat-8-on-centos-7
+# https://www.vultr.com/docs/how-to-install-apache-tomcat-8-on-centos-7
+
   pre_tasks:
 
   - name: ensure that package libselinux-python is present
