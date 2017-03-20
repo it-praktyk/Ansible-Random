@@ -1,0 +1,101 @@
+---
+- hosts: dockers
+  #gather_facts: no
+  become: yes
+  become_user: root
+  vars:
+    # Available options: edge - monthly releases; stable - quarterly
+    # Installing from the edge channel is not supported by the current playbook yet
+    # To do it you need disable/enable the stable/edge repositories in the docker repo file
+    # or on the yum operations step    
+    docker_channel: stable
+    
+  pre_tasks:
+
+  - name: ensure that packages required to manage a node by Ansible are installed
+    yum:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+
+    with_items:
+      - libselinux-python
+      # https://dl.fedoraproject.org/pub/epel/7/x86_64/p/python2-simplejson-3.10.0-1.el7.x86_64.rpm
+      - /vagrant/python2-simplejson-3.10.0-1.el7.x86_64.rpm
+
+  tasks:
+  
+  - name: check if the file with Docker CE repositories exists
+    copy:
+      #source file is downloaded from:  https://download.docker.com/linux/centos/docker-ce.repo
+      src: ./sources/docker-ce.repo
+      dest: /etc/yum.repos.d/docker-ce.repo
+      force: no
+
+  - name: copy gpg key used by Docker CE repositories
+    copy:
+      #source file is downloaded from: https://download.docker.com/linux/centos/gpg
+      src: ./sources/docker-ce-gpg.pub
+      dest: /etc/pki/rpm-gpg/docker-ce-gpg.pub
+
+  - name: check if the gpg key for Docker CE repositories is trusted by rpm
+    rpm_key:
+      key: /etc/pki/rpm-gpg/docker-ce-gpg.pub
+      state: present
+
+  - name: install rpm with data about the Fedora EPEL repository
+    yum:
+      name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      state: present
+      update_cache: no
+
+  - name: add Fedora EPEL gpg key to rpm db
+    rpm_key:
+      key: /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+      state: present
+
+  - name: install additional packages
+    yum:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+    with_items:
+      - docker-ce
+      - git
+      - python-pip
+    
+  - name: enable and start services
+    service:
+      name: "{{ item }}"
+      state: "started"
+      enabled: "yes"
+    with_items:
+      - docker
+
+  - name: update all packages
+    yum:
+      name: '*'
+      state: latest
+
+  - name: reboot server and wait to back online
+    include_role:
+      name: it-praktyk.Reboot-And-Wait
+
+  - name: install docker-compose via pip
+    pip:
+      name: docker-compose
+      state: present
+
+    #https://unix.stackexchange.com/questions/14056/what-is-kernel-ip-forwarding
+  - name: enable IPv4 forwarding if needed
+    copy:
+      src: ./sources/ipv4Forwarding.conf
+      dest: /etc/sysctl.d/ipv4Forwarding.conf
+      force: no
+    register: result
+
+  - name: force kernel to reread configuration files
+    command: sysctl -p
+    when: result | changed
+
+...
