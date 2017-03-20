@@ -1,3 +1,4 @@
 vagrant-insecure-key*
 */.vagrant/*
+*/library/*
 */sources/*.rpm
