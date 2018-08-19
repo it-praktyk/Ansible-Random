@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/ubuntu1804"
+
+  config.ssh.insert_key = "false"
+
+  config.vm.define :vm1 do |vm1_config|
+    vm1_config.vm.hostname = "docker"
+    vm1_config.vm.synced_folder "./sources/", "/vagrant"
+    vm1_config.vm.provider "vmware_workstation" do |vb|
+      vb.memory = "4096"
+      vb.gui = false
+    end
+
+    vm1_config.vm.provision "shell", path: "scripts/install-ansible.sh"
+
+    vm1_config.vm.provision "shell", inline: "ansible-galaxy install -r /vagrant/ansible/requirements.yml -p /vagrant/ansible/library"
+
+    vm1_config.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "./ansible/docker.yml"
+      ansible.limit = "all"
+      ansible.config_file = "./ansible/ansible.cfg"
+      ansible.inventory_path = "./ansible/hosts.ini"
+      ansible.compatibility_mode="2.0"
+    end
+
+  end
+end
